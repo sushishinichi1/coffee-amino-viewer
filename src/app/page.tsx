@@ -1,19 +1,41 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CoffeeAnalysisPanel } from '@/components/CoffeeAnalysisPanel';
 import { CoffeeControlPanel } from '@/components/CoffeeControlPanel';
-import { coffeeSamples } from '@/data/coffeeSamples';
+import { fetchLoffeeBeans } from '@/lib/loffee';
 import { calculateRoastReaction } from '@/lib/roast';
+import type { CoffeeBeanApiItem } from '@/types/coffee';
 
 export default function HomePage() {
-  const [selectedSampleId, setSelectedSampleId] = useState(coffeeSamples[0].id);
+  const [searchQuery, setSearchQuery] = useState('coffee');
+  const [searchResults, setSearchResults] = useState<CoffeeBeanApiItem[]>([]);
+  const [selectedBean, setSelectedBean] = useState<CoffeeBeanApiItem | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [roastLevel, setRoastLevel] = useState(35);
 
-  const selectedSample = useMemo(
-    () => coffeeSamples.find((sample) => sample.id === selectedSampleId) ?? coffeeSamples[0],
-    [selectedSampleId],
-  );
+  const loadBeans = useCallback(async (query: string) => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const beans = await fetchLoffeeBeans({ search: query || 'coffee', limit: 20 });
+      setSearchResults(beans);
+      setSelectedBean(beans[0] ?? null);
+    } catch (fetchError) {
+      const message = fetchError instanceof Error ? fetchError.message : 'Failed to fetch coffee beans.';
+      setSearchResults([]);
+      setSelectedBean(null);
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadBeans('coffee');
+  }, [loadBeans]);
 
   const reaction = useMemo(() => calculateRoastReaction(roastLevel), [roastLevel]);
 
@@ -24,14 +46,20 @@ export default function HomePage() {
 
       <div className="relative mx-auto grid max-w-[1180px] gap-4 lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
         <CoffeeControlPanel
-          samples={coffeeSamples}
-          selectedSample={selectedSample}
-          selectedSampleId={selectedSampleId}
-          onSelectSample={setSelectedSampleId}
+          searchQuery={searchQuery}
+          onChangeSearchQuery={setSearchQuery}
+          onSearch={() => {
+            void loadBeans(searchQuery);
+          }}
+          searchResults={searchResults}
+          selectedBean={selectedBean}
+          onSelectBean={setSelectedBean}
+          loading={loading}
+          error={error}
           roastLevel={roastLevel}
           onChangeRoastLevel={setRoastLevel}
         />
-        <CoffeeAnalysisPanel sample={selectedSample} roastLevel={roastLevel} reaction={reaction} />
+        <CoffeeAnalysisPanel bean={selectedBean} roastLevel={roastLevel} reaction={reaction} />
       </div>
     </main>
   );

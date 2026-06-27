@@ -1,22 +1,10 @@
 import { flavorOutput } from '@/lib/roast';
-import type { AminoAcidLevel, CoffeeSample, RoastReaction } from '@/types/coffee';
+import type { CoffeeBeanApiItem, RoastReaction } from '@/types/coffee';
 
 type CoffeeAnalysisPanelProps = {
-  sample: CoffeeSample;
+  bean: CoffeeBeanApiItem | null;
   roastLevel: number;
   reaction: RoastReaction;
-};
-
-const aminoAcidLevelLabel: Record<AminoAcidLevel, string> = {
-  low: '少ない',
-  medium: '中程度',
-  high: '多い',
-};
-
-const aminoAcidLevelStyle: Record<AminoAcidLevel, string> = {
-  low: 'border-stone-500/40 bg-stone-500/15 text-stone-200',
-  medium: 'border-amber-300/35 bg-amber-400/15 text-amber-100',
-  high: 'border-orange-300/40 bg-orange-500/20 text-orange-100',
 };
 
 const reactionLabels: Record<keyof RoastReaction, string> = {
@@ -32,34 +20,66 @@ const reactionFlow = ['アミノ酸 + 糖', '熱', 'メイラード反応', '香
 
 const moleculeNotes = [
   'アミノ酸と糖は、熱によってメイラード反応を起こします。',
-  '浅煎りでは酸味や産地由来の香りが残りやすくなります。',
-  '深煎りでは苦味、コク、ロースト香が増え、酸味は下がります。',
+  'Loffee API の degree は補助情報として扱い、焙煎度スライダーの値で反応を計算します。',
+  'API データが欠けていても、焙煎反応ビューは現在の焙煎度で動作します。',
 ];
 
-export function CoffeeAnalysisPanel({ sample, roastLevel, reaction }: CoffeeAnalysisPanelProps) {
+const displayValue = (value: string | number | null) => {
+  if (value === null || value === '') return 'No data';
+  return String(value);
+};
+
+const elevationValue = (bean: CoffeeBeanApiItem | null) => {
+  if (!bean) return 'No data';
+  if (bean.elevation) return bean.elevation;
+  if (bean.minElev !== null && bean.maxElev !== null) return `${bean.minElev} - ${bean.maxElev} m`;
+  if (bean.minElev !== null) return `${bean.minElev} m`;
+  if (bean.maxElev !== null) return `${bean.maxElev} m`;
+  return 'No data';
+};
+
+export function CoffeeAnalysisPanel({ bean, roastLevel, reaction }: CoffeeAnalysisPanelProps) {
+  const beanDetails = [
+    ['Roaster', bean?.roaster ?? null],
+    ['Name', bean?.name ?? null],
+    ['Origin', bean?.origin ?? null],
+    ['Region', bean?.region ?? null],
+    ['Producer', bean?.producer ?? null],
+    ['Variety', bean?.variety ?? null],
+    ['Process', bean?.process ?? null],
+    ['Degree', bean?.degree ?? null],
+    ['Elevation', elevationValue(bean)],
+  ];
+
   return (
     <section className="grid min-w-0 gap-4">
       <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
         <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-stone-50">アミノ酸プロファイル</h2>
-          <span className="text-xs text-amber-200/75">分子カード表示</span>
+          <h2 className="text-xl font-semibold text-stone-50">選択中の豆データ</h2>
+          <span className="text-xs text-amber-200/75">Loffee Labs Bean Base</span>
         </div>
-        <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
-          {sample.aminoAcids.map((aminoAcid) => (
-            <article key={aminoAcid.name} className="min-w-0 rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3">
-              <div className="mb-2 flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-base font-semibold text-stone-100">{aminoAcid.name}</h3>
-                  <p className="mt-0.5 text-xs leading-5 text-stone-400">{aminoAcid.role}</p>
-                </div>
-                <span className={`shrink-0 rounded-full border px-2.5 py-1 text-xs font-medium ${aminoAcidLevelStyle[aminoAcid.level]}`}>
-                  {aminoAcidLevelLabel[aminoAcid.level]}
-                </span>
+        {bean ? (
+          <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
+            {beanDetails.map(([label, value]) => (
+              <div key={label} className="min-w-0 rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3">
+                <div className="text-xs text-stone-500">{label}</div>
+                <div className="mt-1 truncate text-sm font-medium text-stone-100">{displayValue(value)}</div>
               </div>
-              <p className="text-xs leading-5 text-stone-300">味の手がかり: {aminoAcid.flavorHint}</p>
-            </article>
-          ))}
-        </div>
+            ))}
+            <div className="min-w-0 rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3 md:col-span-2">
+              <div className="mb-2 text-xs text-stone-500">Tasting</div>
+              <div className="flex flex-wrap gap-1.5">
+                {(bean.tasting.length > 0 ? bean.tasting : ['No data']).map((note) => (
+                  <span key={note} className="rounded-full border border-amber-300/25 bg-amber-400/10 px-2.5 py-1 text-xs text-amber-100">
+                    {note}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3 text-sm text-stone-400">no selected bean</p>
+        )}
       </div>
 
       <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
@@ -105,6 +125,9 @@ export function CoffeeAnalysisPanel({ sample, roastLevel, reaction }: CoffeeAnal
         <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
           <h2 className="mb-3 text-xl font-semibold text-stone-50">味の出力</h2>
           <p className="text-sm leading-6 text-stone-300">{flavorOutput(roastLevel)}</p>
+          <p className="mt-3 rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-xs leading-5 text-stone-400">
+            API degree: <span className="text-amber-100/80">{displayValue(bean?.degree ?? null)}</span>
+          </p>
         </div>
       </div>
 
