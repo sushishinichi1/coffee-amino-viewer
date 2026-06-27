@@ -1,16 +1,28 @@
 import { flavorOutput } from '@/lib/roast';
+import {
+  formatBeanDisplayName,
+  translateDegree,
+  translateOrigin,
+  translateProcess,
+  translateTastingTag,
+  translateVariety,
+} from '@/lib/coffeeDisplay';
 import type { CoffeeBeanApiItem, RoastReaction } from '@/types/coffee';
 
 type CoffeeAnalysisPanelProps = {
   bean: CoffeeBeanApiItem | null;
+  showBeanDetail: boolean;
   roastLevel: number;
   reaction: RoastReaction;
+  onCloseBeanDetail: () => void;
+  onShowBeanDetail: () => void;
 };
 
 const reactionLabels: Record<keyof RoastReaction, string> = {
   aminoAcidsRemaining: '残存アミノ酸',
   maillardProducts: 'メイラード生成物',
   acidity: '酸味',
+  sweetness: '甘さ',
   bitterness: '苦味',
   aromaIntensity: '香りの強さ',
   body: 'コク・厚み',
@@ -24,66 +36,105 @@ const moleculeNotes = [
   'API データが欠けていても、焙煎反応ビューは現在の焙煎度で動作します。',
 ];
 
+const NO_DATA_LABEL = 'データなし';
+
 const displayValue = (value: string | number | null) => {
-  if (value === null || value === '') return 'No data';
+  if (value === null || value === '') return NO_DATA_LABEL;
   return String(value);
 };
 
 const elevationValue = (bean: CoffeeBeanApiItem | null) => {
-  if (!bean) return 'No data';
+  if (!bean) return NO_DATA_LABEL;
   if (bean.elevation) return bean.elevation;
   if (bean.minElev !== null && bean.maxElev !== null) return `${bean.minElev} - ${bean.maxElev} m`;
   if (bean.minElev !== null) return `${bean.minElev} m`;
   if (bean.maxElev !== null) return `${bean.maxElev} m`;
-  return 'No data';
+  return NO_DATA_LABEL;
 };
 
-export function CoffeeAnalysisPanel({ bean, roastLevel, reaction }: CoffeeAnalysisPanelProps) {
+export function CoffeeAnalysisPanel({
+  bean,
+  showBeanDetail,
+  roastLevel,
+  reaction,
+  onCloseBeanDetail,
+  onShowBeanDetail,
+}: CoffeeAnalysisPanelProps) {
   const beanDetails = [
-    ['Roaster', bean?.roaster ?? null],
-    ['Name', bean?.name ?? null],
-    ['Origin', bean?.origin ?? null],
-    ['Region', bean?.region ?? null],
-    ['Producer', bean?.producer ?? null],
-    ['Variety', bean?.variety ?? null],
-    ['Process', bean?.process ?? null],
-    ['Degree', bean?.degree ?? null],
-    ['Elevation', elevationValue(bean)],
+    ['ロースター', bean?.roaster ?? null],
+    ['豆名', bean ? formatBeanDisplayName(bean) : null],
+    ['生産国', translateOrigin(bean?.origin ?? null)],
+    ['地域', bean?.region ?? null],
+    ['生産者', bean?.producer ?? null],
+    ['品種', translateVariety(bean?.variety ?? null)],
+    ['精製方法', translateProcess(bean?.process ?? null)],
+    ['API上の焙煎度', translateDegree(bean?.degree ?? null)],
+    ['標高', elevationValue(bean)],
   ];
 
   return (
     <section className="grid min-w-0 gap-4">
-      <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
-        <div className="mb-3 flex items-center justify-between gap-3">
-          <h2 className="text-xl font-semibold text-stone-50">選択中の豆データ</h2>
-          <span className="text-xs text-amber-200/75">Loffee Labs Bean Base</span>
-        </div>
-        {bean ? (
-          <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
-            {beanDetails.map(([label, value]) => (
-              <div key={label} className="min-w-0 rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3">
-                <div className="text-xs text-stone-500">{label}</div>
-                <div className="mt-1 truncate text-sm font-medium text-stone-100">{displayValue(value)}</div>
-              </div>
-            ))}
-            <div className="min-w-0 rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3 md:col-span-2">
-              <div className="mb-2 text-xs text-stone-500">Tasting</div>
-              <div className="flex flex-wrap gap-1.5">
-                {(bean.tasting.length > 0 ? bean.tasting : ['No data']).map((note) => (
-                  <span key={note} className="rounded-full border border-amber-300/25 bg-amber-400/10 px-2.5 py-1 text-xs text-amber-100">
-                    {note}
-                  </span>
-                ))}
-              </div>
+      {showBeanDetail ? (
+        <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="text-xl font-semibold text-stone-50">選択中の豆データ</h2>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-amber-200/75">Loffee Labs Bean Base</span>
+              {bean && (
+                <button
+                  type="button"
+                  onClick={onCloseBeanDetail}
+                  className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-white/10 bg-black/30 text-sm leading-none text-stone-300 transition hover:border-amber-300/30 hover:text-amber-100"
+                  aria-label="選択中の豆データを閉じる"
+                >
+                  ×
+                </button>
+              )}
             </div>
           </div>
-        ) : (
-          <p className="rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3 text-sm text-stone-400">no selected bean</p>
-        )}
-      </div>
+          {bean ? (
+            <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
+              {beanDetails.map(([label, value]) => (
+                <div key={label} className="min-w-0 rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3">
+                  <div className="text-xs text-stone-500">{label}</div>
+                  <div className="mt-1 whitespace-normal break-words text-sm font-medium text-stone-100">{displayValue(value)}</div>
+                </div>
+              ))}
+              <div className="min-w-0 rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3 md:col-span-2">
+                <div className="mb-2 text-xs text-stone-500">味・香りのタグ</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {(bean.tasting.length > 0 ? bean.tasting : [NO_DATA_LABEL]).map((note) => (
+                    <span key={note} title={note} className="rounded-full border border-amber-300/25 bg-amber-400/10 px-2.5 py-1 text-xs text-amber-100">
+                      {translateTastingTag(note)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3 text-sm text-stone-400">豆が選択されていません</p>
+          )}
+        </div>
+      ) : null}
 
       <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
-        <h2 className="mb-3 text-xl font-semibold text-stone-50">焙煎反応ビュー</h2>
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold text-stone-50">焙煎反応ビュー</h2>
+            <p className="mt-1 text-xs leading-5 text-stone-400">
+              スライダー値に加え、品種・精製方法・API上の焙煎度で簡易補正しています。
+            </p>
+          </div>
+          {bean && !showBeanDetail && (
+            <button
+              type="button"
+              onClick={onShowBeanDetail}
+              className="shrink-0 rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-300/15"
+            >
+              豆データを表示
+            </button>
+          )}
+        </div>
         <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
           {Object.entries(reactionLabels).map(([key, label]) => {
             const value = reaction[key as keyof RoastReaction];
@@ -126,7 +177,7 @@ export function CoffeeAnalysisPanel({ bean, roastLevel, reaction }: CoffeeAnalys
           <h2 className="mb-3 text-xl font-semibold text-stone-50">味の出力</h2>
           <p className="text-sm leading-6 text-stone-300">{flavorOutput(roastLevel)}</p>
           <p className="mt-3 rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-xs leading-5 text-stone-400">
-            API degree: <span className="text-amber-100/80">{displayValue(bean?.degree ?? null)}</span>
+            API上の焙煎度: <span className="text-amber-100/80">{displayValue(translateDegree(bean?.degree ?? null))}</span>
           </p>
         </div>
       </div>

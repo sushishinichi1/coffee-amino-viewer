@@ -25,13 +25,22 @@ export type CoffeeSearchParams = {
 
 export type LoffeeBeansResponse = {
   beans: CoffeeBeanApiItem[];
+  cached?: boolean;
   error?: string;
+  details?: {
+    endpoint?: string | null;
+    status?: number | null;
+    statusText?: string | null;
+    responseBody?: string | null;
+    causeMessage?: string | null;
+  };
 };
 
 export type RoastReaction = {
   aminoAcidsRemaining: number;
   maillardProducts: number;
   acidity: number;
+  sweetness: number;
   bitterness: number;
   aromaIntensity: number;
   body: number;

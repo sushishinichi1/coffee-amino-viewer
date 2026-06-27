@@ -2,6 +2,15 @@ import type { CoffeeBeanApiItem, CoffeeSearchParams, LoffeeBeansResponse } from 
 
 type LoffeeRawRecord = Record<string, unknown>;
 
+export const DEFAULT_LOFFEE_API_BASE_URL = 'https://api.loffeelabs.com/api/v2';
+
+export const buildLoffeeBeansEndpoint = (baseUrl = DEFAULT_LOFFEE_API_BASE_URL) => {
+  const trimmedBaseUrl = baseUrl.trim().replace(/\/+$/, '');
+  const endpoint = trimmedBaseUrl.endsWith('/beans') ? trimmedBaseUrl : `${trimmedBaseUrl}/beans`;
+
+  return new URL(endpoint);
+};
+
 const textOrNull = (value: unknown): string | null => {
   if (typeof value === 'string') {
     const trimmed = value.trim();
@@ -123,7 +132,23 @@ export const fetchLoffeeBeans = async (params: CoffeeSearchParams): Promise<Coff
   const payload = (await response.json()) as LoffeeBeansResponse;
 
   if (!response.ok) {
-    throw new Error(payload.error ?? 'Failed to fetch coffee beans.');
+    const errorMessage =
+      payload.details?.status === 429
+        ? 'リクエスト制限に達しました。数秒待ってから再検索してください。'
+        : payload.error ?? 'コーヒー豆データの取得に失敗しました。';
+    const details = payload.details
+      ? [
+          payload.details.endpoint ? `endpoint: ${payload.details.endpoint}` : null,
+          payload.details.status !== undefined ? `status: ${payload.details.status}` : null,
+          payload.details.statusText ? `statusText: ${payload.details.statusText}` : null,
+          payload.details.causeMessage ? `cause: ${payload.details.causeMessage}` : null,
+          payload.details.responseBody ? `responseBody: ${payload.details.responseBody}` : null,
+        ]
+          .filter(Boolean)
+          .join(' / ')
+      : '';
+
+    throw new Error(`${errorMessage}${details ? ` (${details})` : ''}`);
   }
 
   return payload.beans ?? [];
