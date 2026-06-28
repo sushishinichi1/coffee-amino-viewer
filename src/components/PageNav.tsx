@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-type PageNavKey = 'viewer' | 'vocab' | 'amino';
+export type PageNavKey = 'viewer' | 'vocab' | 'amino';
 
 type PageNavProps = {
   current: PageNavKey;

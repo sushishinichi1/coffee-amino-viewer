@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useMemo, useState } from 'react';
-import { PageNav } from '@/components/PageNav';
+import { AppHeader } from '@/components/AppHeader';
 import { aminoAcids, findAminoAcidByName } from '@/data/aminoAcids';
 import type { AminoAcidApiItem, AminoAcidLocalInfo, AminoAcidResponse } from '@/types/amino';
 
@@ -75,6 +75,8 @@ export function AminoAcidViewer({ initialAminoId }: AminoAcidViewerProps) {
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_6%,rgba(245,158,11,0.16),transparent_28%),radial-gradient(circle_at_78%_0%,rgba(120,53,15,0.22),transparent_30%),linear-gradient(135deg,#070504_0%,#10100f_42%,#1a0f08_100%)]" />
       <div className="pointer-events-none fixed inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:28px_28px]" />
 
+      <AppHeader current="amino" />
+
       <div className="relative mx-auto grid max-w-[1220px] gap-4 lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
         <aside className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-[0_28px_70px_rgba(0,0,0,0.42)] backdrop-blur">
           <div className="mb-4">
@@ -109,9 +111,8 @@ export function AminoAcidViewer({ initialAminoId }: AminoAcidViewerProps) {
 
         <section className="grid min-w-0 gap-4">
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
-            <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="mb-3">
               <h2 className="text-xl font-semibold text-stone-50">構造カード</h2>
-              <PageNav current="amino" />
             </div>
 
             <div className="mb-4 rounded-xl border border-white/10 bg-[#0d0a08]/80 p-4">

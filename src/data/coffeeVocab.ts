@@ -23,6 +23,7 @@ export type CoffeeVocabItem = {
   roastBehavior?: string;
   processEffect?: string;
   moleculeRelation?: string;
+  aminoAcidRelation?: string;
   aminoAcidRole?: string;
   relatedAminoAcids?: string[];
   relatedReaction?: string;
@@ -43,7 +44,7 @@ export const coffeeVocabCategories: CoffeeVocabCategory[] = [
   'アミノ酸',
 ];
 
-export const coffeeVocabItems: CoffeeVocabItem[] = [
+const baseCoffeeVocabItems: CoffeeVocabItem[] = [
   {
     id: 'geisha',
     category: '品種',
@@ -524,3 +525,160 @@ export const coffeeVocabItems: CoffeeVocabItem[] = [
     aminoId: 'leucine',
   },
 ];
+
+const relationEnhancements: Record<string, Partial<CoffeeVocabItem>> = {
+  geisha: {
+    relatedAminoAcids: ['フェニルアラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応 / ストレッカー分解',
+    aminoAcidRelation:
+      '花や紅茶のような香りは品種だけで決まるものではなく、焙煎中のアミノ酸と糖の反応によって立ち上がる香気成分の理解につながる。',
+  },
+  heirlooms: {
+    relatedAminoAcids: ['フェニルアラニン', 'プロリン', 'アラニン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation:
+      'エチオピア系の花や果実感の説明では、アミノ酸と糖の反応による香りの立ち上がりを合わせて見ると理解しやすい。',
+  },
+  bourbon: {
+    relatedAminoAcids: ['アラニン', 'プロリン', 'グルタミン酸'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation:
+      '甘さや丸みは糖だけでなく、焙煎中のアミノ酸反応による香ばしさや厚みと合わせて説明できる。',
+  },
+  typica: {
+    relatedAminoAcids: ['アラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation:
+      'クリーンさや上品な甘さを、浅煎りで残る酸と焙煎初期のアミノ酸反応のバランスとして説明できる。',
+  },
+  caturra: {
+    relatedAminoAcids: ['アラニン', 'グルタミン酸'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: '明るい酸と甘さの説明に、残存アミノ酸とメイラード生成物のバランスを使える。',
+  },
+  'pink-bourbon': {
+    relatedAminoAcids: ['フェニルアラニン', 'アラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応 / ストレッカー分解',
+    aminoAcidRelation:
+      '華やかな香りや果実感の説明に、芳香族アミノ酸や焙煎由来の香気成分の視点を重ねられる。',
+  },
+  'sl28-sl34': {
+    relatedAminoAcids: ['グルタミン酸', 'アラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation:
+      '強い酸や果実感の説明では、酸そのものと、焙煎中に生まれる甘さ・ボディとのバランスを見ると分かりやすい。',
+  },
+  'ruiru-11-batian': {
+    relatedAminoAcids: ['ロイシン', 'グルタミン酸', 'プロリン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: 'ボディや安定感の説明に、アミノ酸反応による厚みやロースト香の視点を加えられる。',
+  },
+  natural: {
+    relatedAminoAcids: ['アラニン', 'プロリン', 'フェニルアラニン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation:
+      '果実感や発酵感は精製由来の印象だが、焙煎時にはアミノ酸と糖の反応によって甘さや香ばしさが重なる。',
+  },
+  washed: {
+    relatedAminoAcids: ['アラニン', 'グルタミン酸'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: 'クリーンさや酸の輪郭を、残存アミノ酸と焙煎反応の進み方と合わせて見ると理解しやすい。',
+  },
+  honey: {
+    relatedAminoAcids: ['アラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: '甘さや質感の説明に、糖だけでなくメイラード反応による丸みを重ねられる。',
+  },
+  anaerobic: {
+    relatedAminoAcids: ['フェニルアラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応 / ストレッカー分解',
+    aminoAcidRelation:
+      '発酵由来の強い香りと、焙煎中のアミノ酸反応で生まれる香気成分を分けて見ると理解しやすい。',
+  },
+  'controlled-fermentation': {
+    relatedAminoAcids: ['フェニルアラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応 / ストレッカー分解',
+    aminoAcidRelation:
+      '発酵由来の強い香りと、焙煎中のアミノ酸反応で生まれる香気成分を分けて見ると理解しやすい。',
+  },
+  'ultra-light': {
+    relatedAminoAcids: ['アラニン', 'グルタミン酸', 'フェニルアラニン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: '浅煎りではアミノ酸が比較的残りやすく、酸や香りの輪郭と合わせて見ると分かりやすい。',
+  },
+  'nordic-light': {
+    relatedAminoAcids: ['アラニン', 'グルタミン酸', 'フェニルアラニン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: '浅煎りではアミノ酸が比較的残りやすく、酸や香りの輪郭と合わせて見ると分かりやすい。',
+  },
+  light: {
+    relatedAminoAcids: ['アラニン', 'グルタミン酸', 'フェニルアラニン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: '浅煎りではアミノ酸が比較的残りやすく、酸や香りの輪郭と合わせて見ると分かりやすい。',
+  },
+  'medium-light': {
+    relatedAminoAcids: ['プロリン', 'アラニン', 'フェニルアラニン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: 'メイラード反応が進み、甘さ、香ばしさ、コクの説明にアミノ酸反応が使いやすい。',
+  },
+  medium: {
+    relatedAminoAcids: ['プロリン', 'アラニン', 'フェニルアラニン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: 'メイラード反応が進み、甘さ、香ばしさ、コクの説明にアミノ酸反応が使いやすい。',
+  },
+  dark: {
+    relatedAminoAcids: ['ロイシン', 'プロリン'],
+    relatedReaction: 'メイラード反応 / カラメル化',
+    aminoAcidRelation: '深煎りではアミノ酸そのものより、反応生成物、苦味、ロースト香の説明が中心になる。',
+  },
+  floral: {
+    relatedAminoAcids: ['フェニルアラニン', 'プロリン'],
+    relatedReaction: 'ストレッカー分解',
+    aminoAcidRelation: '花のような香りは、焙煎反応で生まれる香気成分を理解する手がかりになる。',
+  },
+  rose: {
+    relatedAminoAcids: ['フェニルアラニン', 'プロリン'],
+    relatedReaction: 'ストレッカー分解',
+    aminoAcidRelation: 'バラのような印象は、芳香族アミノ酸と香気成分の説明に関係づけて見られる。',
+  },
+  jasmine: {
+    relatedAminoAcids: ['フェニルアラニン', 'プロリン'],
+    relatedReaction: 'ストレッカー分解',
+    aminoAcidRelation: 'ジャスミンのような繊細な香りは、香気成分形成の理解につながる。',
+  },
+  citrus: {
+    relatedAminoAcids: ['グルタミン酸', 'アラニン'],
+    relatedReaction: '酸の変化 / メイラード反応',
+    aminoAcidRelation: '柑橘のような酸は、酸そのものと焙煎反応で生まれる甘さのバランスで説明しやすい。',
+  },
+  'black-tea': {
+    relatedAminoAcids: ['フェニルアラニン', 'アラニン'],
+    relatedReaction: 'メイラード反応 / ストレッカー分解',
+    aminoAcidRelation: '紅茶のような香りや軽い渋みは、焙煎由来の香気成分と合わせて理解しやすい。',
+  },
+  'white-tea': {
+    relatedAminoAcids: ['フェニルアラニン', 'アラニン'],
+    relatedReaction: 'メイラード反応 / ストレッカー分解',
+    aminoAcidRelation: '白茶のような繊細さは、浅い焙煎での香りの立ち上がりを説明する手がかりになる。',
+  },
+  berries: {
+    relatedAminoAcids: ['フェニルアラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応 / ストレッカー分解',
+    aminoAcidRelation: 'ベリーの印象は精製由来の果実感と、焙煎中に生まれる香気成分を分けて見ると理解しやすい。',
+  },
+  'honey-flavor': {
+    relatedAminoAcids: ['アラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: 'はちみつのような甘さは、糖だけでなく焙煎反応による丸みの説明に関係する。',
+  },
+  syrupy: {
+    relatedAminoAcids: ['アラニン', 'プロリン'],
+    relatedReaction: 'メイラード反応',
+    aminoAcidRelation: 'シロップのような質感は、甘さとメイラード反応由来の厚みを合わせて説明しやすい。',
+  },
+};
+
+export const coffeeVocabItems: CoffeeVocabItem[] = baseCoffeeVocabItems.map((item) => ({
+  ...item,
+  ...relationEnhancements[item.id],
+}));

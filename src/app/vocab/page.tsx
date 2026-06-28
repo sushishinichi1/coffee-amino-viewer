@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { PageNav } from '@/components/PageNav';
+import { AppHeader } from '@/components/AppHeader';
 import {
   coffeeVocabItems,
   type CoffeeVocabCategory,
@@ -80,9 +80,8 @@ const detailLabels: Array<{
     | 'roastBehavior'
     | 'processEffect'
     | 'moleculeRelation'
+    | 'aminoAcidRelation'
     | 'aminoAcidRole'
-    | 'relatedAminoAcids'
-    | 'relatedReaction'
     | 'sourceNote'
   >;
   label: string;
@@ -92,12 +91,24 @@ const detailLabels: Array<{
   { key: 'cupProfile', label: 'カップ傾向' },
   { key: 'roastBehavior', label: '焙煎での出方' },
   { key: 'processEffect', label: '精製による影響' },
-  { key: 'moleculeRelation', label: '分子との関係' },
+  { key: 'moleculeRelation', label: 'アミノ酸との関係' },
+  { key: 'aminoAcidRelation', label: 'アミノ酸との関係' },
   { key: 'aminoAcidRole', label: 'アミノ酸の役割' },
-  { key: 'relatedAminoAcids', label: '関連アミノ酸' },
-  { key: 'relatedReaction', label: '関連反応' },
   { key: 'sourceNote', label: '補足' },
 ];
+
+const aminoAcidQueryNames: Record<string, string> = {
+  アラニン: 'alanine',
+  Alanine: 'alanine',
+  グルタミン酸: 'glutamic acid',
+  'Glutamic acid': 'glutamic acid',
+  フェニルアラニン: 'phenylalanine',
+  Phenylalanine: 'phenylalanine',
+  プロリン: 'proline',
+  Proline: 'proline',
+  ロイシン: 'leucine',
+  Leucine: 'leucine',
+};
 
 function stringifyVocabValue(value: CoffeeVocabItem[keyof CoffeeVocabItem]) {
   if (Array.isArray(value)) return value.join(' ');
@@ -114,6 +125,9 @@ function getSearchableText(item: CoffeeVocabItem) {
     ...item.relatedTerms,
     item.queryName,
     item.aminoId,
+    item.relatedReaction,
+    ...(item.relatedAminoAcids ?? []),
+    ...(item.relatedAminoAcids ?? []).map((aminoAcid) => aminoAcidQueryNames[aminoAcid]),
     ...optionalValues,
   ]
     .filter(Boolean)
@@ -156,6 +170,8 @@ export default function VocabPage() {
     <main className="min-h-screen overflow-hidden bg-[#070504] px-4 py-4 text-[#f7efe1] sm:px-5 lg:px-6">
       <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_6%,rgba(245,158,11,0.16),transparent_28%),radial-gradient(circle_at_78%_0%,rgba(120,53,15,0.22),transparent_30%),linear-gradient(135deg,#070504_0%,#10100f_42%,#1a0f08_100%)]" />
       <div className="pointer-events-none fixed inset-0 opacity-[0.08] [background-image:linear-gradient(rgba(255,255,255,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.18)_1px,transparent_1px)] [background-size:28px_28px]" />
+
+      <AppHeader current="vocab" />
 
       <div className="relative mx-auto grid max-w-[1220px] gap-4 lg:grid-cols-[340px_minmax(0,1fr)] xl:grid-cols-[360px_minmax(0,1fr)]">
         <aside className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-5 shadow-[0_28px_70px_rgba(0,0,0,0.42)] backdrop-blur">
@@ -227,10 +243,7 @@ export default function VocabPage() {
           <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
             <div className="mb-3 flex items-center justify-between gap-3">
               <h2 className="text-xl font-semibold text-stone-50">単語カード</h2>
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-amber-200/75">{selectedMajorCategory}</span>
-                <PageNav current="vocab" />
-              </div>
+              <span className="text-xs text-amber-200/75">{selectedMajorCategory}</span>
             </div>
 
             <div className="mb-4 overflow-x-auto pb-1">
@@ -272,6 +285,35 @@ export default function VocabPage() {
                         </div>
                       </div>
                       <p className="text-sm leading-6 text-stone-300">{item.shortDescription}</p>
+                      {(item.relatedAminoAcids?.length || item.relatedReaction) && (
+                        <div className="mt-3 grid gap-2 rounded-lg border border-amber-300/15 bg-amber-400/[0.055] p-3">
+                          {item.relatedAminoAcids && item.relatedAminoAcids.length > 0 && (
+                            <div>
+                              <div className="text-[11px] font-medium text-amber-200/75">関連アミノ酸</div>
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {item.relatedAminoAcids.map((aminoAcid) => {
+                                  const queryName = aminoAcidQueryNames[aminoAcid] ?? aminoAcid;
+                                  return (
+                                    <Link
+                                      key={aminoAcid}
+                                      href={`/amino?name=${encodeURIComponent(queryName)}`}
+                                      className="rounded-full border border-amber-300/30 bg-black/25 px-2.5 py-1 text-xs text-amber-100 transition hover:border-amber-200/55 hover:bg-amber-300/15"
+                                    >
+                                      {aminoAcid}
+                                    </Link>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                          {item.relatedReaction && (
+                            <div>
+                              <div className="text-[11px] font-medium text-amber-200/75">関連反応</div>
+                              <p className="mt-1 text-xs leading-5 text-stone-300">{item.relatedReaction}</p>
+                            </div>
+                          )}
+                        </div>
+                      )}
                       {details.length > 0 && (
                         <div className="mt-3 grid gap-2">
                           {details.map((detail) => (

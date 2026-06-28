@@ -1,5 +1,6 @@
+import Link from 'next/link';
 import { flavorOutput } from '@/lib/roast';
-import { PageNav } from '@/components/PageNav';
+import { getRelatedAminoAcidsForBean } from '@/lib/coffeeAminoLinks';
 import {
   formatBeanDisplayName,
   translateDegree,
@@ -61,6 +62,7 @@ export function CoffeeAnalysisPanel({
   onCloseBeanDetail,
   onShowBeanDetail,
 }: CoffeeAnalysisPanelProps) {
+  const relatedAminoAcids = getRelatedAminoAcidsForBean(bean);
   const beanDetails = [
     ['ロースター', bean?.roaster ?? null],
     ['豆名', bean ? formatBeanDisplayName(bean) : null],
@@ -77,12 +79,13 @@ export function CoffeeAnalysisPanel({
     <section className="grid min-w-0 gap-4">
       {showBeanDetail ? (
         <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
-          <div className="mb-3 flex items-start justify-between gap-3">
-            <h2 className="text-xl font-semibold text-stone-50">選択中の豆データ</h2>
-            <div className="flex shrink-0 flex-col items-end gap-2">
-              <PageNav current="viewer" />
-              <div className="flex items-center justify-end gap-2">
-                <span className="text-xs text-amber-200/75">Loffee Labs Bean Base</span>
+          <div className="mb-3">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-semibold text-stone-50">選択中の豆データ</h2>
+                <p className="mt-1 text-xs text-amber-200/75">Loffee Labs Bean Base</p>
+              </div>
+              <div className="shrink-0">
                 {bean && (
                   <button
                     type="button"
@@ -122,27 +125,24 @@ export function CoffeeAnalysisPanel({
       ) : null}
 
       <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
-        <div className="mb-3 flex items-start justify-between gap-3">
-          <div>
-            <h2 className="text-xl font-semibold text-stone-50">焙煎反応ビュー</h2>
-            <p className="mt-1 text-xs leading-5 text-stone-400">
-              スライダー値に加え、品種・精製方法・API上の焙煎度で簡易補正しています。
-            </p>
-          </div>
-          {!showBeanDetail && (
-            <div className="flex shrink-0 items-center gap-2">
-              <PageNav current="viewer" />
-              {bean && (
-                <button
-                  type="button"
-                  onClick={onShowBeanDetail}
-                  className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-300/15"
-                >
-                  豆データを表示
-                </button>
-              )}
+        <div className="mb-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold text-stone-50">焙煎反応ビュー</h2>
+              <p className="mt-1 text-xs leading-5 text-stone-400">
+                スライダー値に加え、品種・精製方法・API上の焙煎度で簡易補正しています。
+              </p>
             </div>
-          )}
+            {!showBeanDetail && bean && (
+              <button
+                type="button"
+                onClick={onShowBeanDetail}
+                className="shrink-0 rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-300/15"
+              >
+                豆データを表示
+              </button>
+            )}
+          </div>
         </div>
         <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
           {Object.entries(reactionLabels).map(([key, label]) => {
@@ -164,6 +164,30 @@ export function CoffeeAnalysisPanel({
           })}
         </div>
       </div>
+
+      {bean && (
+        <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
+          <h2 className="text-xl font-semibold text-stone-50">関連アミノ酸</h2>
+          <p className="mt-1 text-xs leading-5 text-stone-400">
+            選択中の豆の品種・精製方法・焙煎度・味タグから、焙煎反応の説明に使いやすいアミノ酸を表示しています。
+          </p>
+          {relatedAminoAcids.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {relatedAminoAcids.map((aminoAcid) => (
+                <Link
+                  key={aminoAcid.queryName}
+                  href={`/amino?name=${encodeURIComponent(aminoAcid.queryName)}`}
+                  className="rounded-full border border-amber-300/30 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:border-amber-200/55 hover:bg-amber-300/15"
+                >
+                  {aminoAcid.nameJa}
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-3 rounded-xl border border-white/10 bg-[#0d0a08]/80 p-3 text-sm text-stone-400">データなし</p>
+          )}
+        </div>
+      )}
 
       <div className="grid min-w-0 gap-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)]">
         <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
