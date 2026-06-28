@@ -1,4 +1,5 @@
 import { flavorOutput } from '@/lib/roast';
+import { PageNav } from '@/components/PageNav';
 import {
   formatBeanDisplayName,
   translateDegree,
@@ -76,20 +77,23 @@ export function CoffeeAnalysisPanel({
     <section className="grid min-w-0 gap-4">
       {showBeanDetail ? (
         <div className="min-w-0 rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_60px_rgba(0,0,0,0.35)] backdrop-blur">
-          <div className="mb-3 flex items-center justify-between gap-3">
+          <div className="mb-3 flex items-start justify-between gap-3">
             <h2 className="text-xl font-semibold text-stone-50">選択中の豆データ</h2>
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-amber-200/75">Loffee Labs Bean Base</span>
-              {bean && (
-                <button
-                  type="button"
-                  onClick={onCloseBeanDetail}
-                  className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-white/10 bg-black/30 text-sm leading-none text-stone-300 transition hover:border-amber-300/30 hover:text-amber-100"
-                  aria-label="選択中の豆データを閉じる"
-                >
-                  ×
-                </button>
-              )}
+            <div className="flex shrink-0 flex-col items-end gap-2">
+              <PageNav current="viewer" />
+              <div className="flex items-center justify-end gap-2">
+                <span className="text-xs text-amber-200/75">Loffee Labs Bean Base</span>
+                {bean && (
+                  <button
+                    type="button"
+                    onClick={onCloseBeanDetail}
+                    className="grid h-6 w-6 shrink-0 place-items-center rounded-full border border-white/10 bg-black/30 text-sm leading-none text-stone-300 transition hover:border-amber-300/30 hover:text-amber-100"
+                    aria-label="選択中の豆データを閉じる"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           {bean ? (
@@ -125,14 +129,19 @@ export function CoffeeAnalysisPanel({
               スライダー値に加え、品種・精製方法・API上の焙煎度で簡易補正しています。
             </p>
           </div>
-          {bean && !showBeanDetail && (
-            <button
-              type="button"
-              onClick={onShowBeanDetail}
-              className="shrink-0 rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-300/15"
-            >
-              豆データを表示
-            </button>
+          {!showBeanDetail && (
+            <div className="flex shrink-0 items-center gap-2">
+              <PageNav current="viewer" />
+              {bean && (
+                <button
+                  type="button"
+                  onClick={onShowBeanDetail}
+                  className="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-300/15"
+                >
+                  豆データを表示
+                </button>
+              )}
+            </div>
           )}
         </div>
         <div className="grid min-w-0 gap-2.5 md:grid-cols-2">
