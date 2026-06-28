@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { PageNav } from '@/components/PageNav';
 import {
   coffeeVocabItems,
@@ -285,6 +286,14 @@ export default function VocabPage() {
                         <p className="mt-3 rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-xs leading-5 text-stone-400">
                           {item.example}
                         </p>
+                      )}
+                      {item.category === 'アミノ酸' && item.queryName && (
+                        <Link
+                          href={`/amino?name=${encodeURIComponent(item.queryName)}`}
+                          className="mt-3 inline-flex rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1.5 text-xs font-medium text-amber-100 transition hover:border-amber-200/50 hover:bg-amber-300/15"
+                        >
+                          構造を見る
+                        </Link>
                       )}
                       {item.relatedTerms.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-1.5">

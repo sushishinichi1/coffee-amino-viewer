@@ -14,7 +14,7 @@ const navItems: Array<{
 }> = [
   { key: 'viewer', label: 'メイン', href: '/' },
   { key: 'vocab', label: '単語帳', href: '/vocab' },
-  { key: 'amino', label: 'アミノ酸', href: '/amino', disabled: true },
+  { key: 'amino', label: 'アミノ酸', href: '/amino' },
 ];
 
 export function PageNav({ current }: PageNavProps) {
